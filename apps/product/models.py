@@ -41,8 +41,8 @@ class Product(models.Model):
 
     @property
     def get_quantity(self):
-        incomes = self.trades.filter(quantity=1).count()
-        outcomes = self.trades.filter(quantity=2).count()
+        incomes = sum(self.trades.filter(action=1).values_list('quantity', flat=True))
+        outcomes = sum(self.trades.filter(action=2).values_list('quantity', flat=True))
         return incomes - outcomes
 
     @property
@@ -51,7 +51,10 @@ class Product(models.Model):
 
     @property
     def average_rank(self):
-        return sum(self.ranks.values_list('rank', flat=True))/(self.ranks.count())
+        try:
+             return sum(self.ranks.values_list('rank', flat=True))/(self.ranks.count())
+        except ZeroDivisionError:
+            return 0
 
     @property
     def get_lakes(self):
