@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from datetime import timedelta
+from gettext import gettext
 
 from pathlib import Path
 
@@ -33,6 +34,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,9 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'apps.account',
+    'apps.order',
+    'apps.product',
+    'apps.cart',
+
     'drf_spectacular',
     'rest_framework',
     "corsheaders",
+    'django_filters',
+
     # 'drf_spectacular_sidecar', #$ pip install drf-spectacular[sidecar]
 
 
@@ -52,6 +61,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -60,6 +70,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+AUTH_USER_MODEL = 'account.User'
 
 TEMPLATES = [
     {
@@ -119,12 +131,34 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en'
 
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'uz'
+LANGUAGES = (
+    ('en', gettext('English')),
+    ('ru', gettext('Russian')),
+    ('uz', gettext('Uzbek')),
+)
+
+MODELTRANSLATION_LANGUAGES = ('en', 'ru', 'uz')
+
+MODELTRANSLATION_PREPOPULATE_LANGUAGE = 'en'
+
+
 TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
 
+LOCALE_PATHS = [
+    BASE_DIR / 'locale/',
+]
+
+
+MODELTRANSLATION_TRANSLATION_FILES = (
+    # 'apps.products.translations',
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
