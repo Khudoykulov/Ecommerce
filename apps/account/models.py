@@ -1,5 +1,8 @@
+from random import randint
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.db.models.signals import post_save, pre_save
 
 
 class UserManager(BaseUserManager):
@@ -44,13 +47,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
+class UserToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,)
+    token = models.PositiveIntegerField()
+    is_used = models.BooleanField(default=False)
+    created_date = models.DateTimeField(auto_now_add=True)
 
 
+def user_token_pre_save(sender, instance, *args, **kwargs):
+    if not instance.token:
+        instance.token = randint(1000, 9999)
 
 
-
-
-
+pre_save.connect(user_token_pre_save, sender=UserToken)
 
 
 
