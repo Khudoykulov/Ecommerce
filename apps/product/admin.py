@@ -24,6 +24,7 @@ class CategoryAdmin(TranslationAdmin):
 @admin.register(Tag)
 class TagAdmin(TranslationAdmin):
     list_display = ('id', 'name')
+    search_fields = ('name',)
 
 
 class ProductImageInline(admin.TabularInline):
