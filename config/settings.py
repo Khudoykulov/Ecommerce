@@ -157,7 +157,7 @@ LOCALE_PATHS = [
 
 
 MODELTRANSLATION_TRANSLATION_FILES = (
-    # 'apps.products.translations',
+    'apps.product.translations',
 )
 
 # Static files (CSS, JavaScript, Images)
