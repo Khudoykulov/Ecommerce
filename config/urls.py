@@ -29,5 +29,6 @@ urlpatterns = [
 
 urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
-    path('account/', include('apps.account.urls', namespace='account'))
+    path('account/', include('apps.account.urls', namespace='account')),
+    path('product/', include('apps.product.urls', namespace='product'))
 )

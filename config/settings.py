@@ -133,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en'
 
-MODELTRANSLATION_DEFAULT_LANGUAGE = 'uz'
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 LANGUAGES = (
     ('en', gettext('English')),
     ('ru', gettext('Russian')),
