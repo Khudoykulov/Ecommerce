@@ -86,20 +86,60 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, validators=[validate_password])
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, validators=[validate_password])
 
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'email', 'first_name', 'last_name', 'avatar',
-#                   'last_login', 'modified_date', 'created_date']
+    def validate(self, attrs):
+        old_password = attrs.get('old_password')
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        if self.context['request'].user.check_password(old_password):
+            if old_password == password:
+                raise ValidationError('Current password does not match!!!!!!!!')
+            if password == password2:
+                return attrs
+            raise ValidationError('Passwords do not match!!!!!')
+        raise ValidationError('old password is incorrect!!!!!!!!!!!!')
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = self.context['request'].user
+        user.set_password(password)
+        user.save()
+        return user
 
 
-# class ResetPasswordSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['email']
-#
-#
+class ResetPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, validators=[validate_password])
+
+    def validate(self, attrs):
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        if self.context['request'].user.check_password(password):
+            raise ValidationError('Current password does not match!!!!!!')
+        if password == password2:
+            return attrs
+        raise ValidationError('Current password does not match!!!!')
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = self.context['request'].user
+        user.set_password(password)
+        user.save()
+        return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'full_name', 'avatar', 'is_active',
+                  'is_staff', 'is_superuser', 'modified_date', 'created_date']
+
+
+
 # class SetNewPasswordSerializer(serializers.Serializer):
 #     password1 = serializers.CharField(max_length=123, write_only=True, min_length=6)
 #     password2 = serializers.CharField(max_length=123, write_only=True, min_length=6)

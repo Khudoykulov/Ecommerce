@@ -14,7 +14,7 @@ class UserAdmin(BaseUserAdmin):
     date_hierarchy = 'created_date'
     fieldsets = (
         (None, {"fields": ('email', 'password')}),
-        ("Personal Datas", {"fields": ('first_name', 'last_name', 'avatar')}),
+        ("Personal Datas", {"fields": ('full_name', 'avatar')}),
         ("Permissions", {"fields": ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ("Imported Dates", {"fields": ('last_login', 'modified_date', 'created_date')})
     )

@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.encoding import smart_str, force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework.response import Response
-from rest_framework import generics, views, status
+from rest_framework import generics, views, status, permissions, viewsets
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -16,14 +16,15 @@ from apps.account.seriallizers import (
     SendEmailSerializer,
     VerifyEmailSerializer,
     CustomTokenObtainPairSerializer,
-    # UserSerializer,
-    # ResetPasswordSerializer,
+    ChangePasswordSerializer,
+    ResetPasswordSerializer,
+    UserProfileSerializer,
     # SetNewPasswordSerializer
 )
 from .models import User, UserToken
 from rest_framework.permissions import IsAuthenticated
 from .tasks import ecommerce_send_email
-
+from .permissions import IsOwnerOrReadOnly
 
 class UserRegisterAPIView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
@@ -80,31 +81,51 @@ class LoginAPIView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
+class ChangePasswordAPIView(generics.GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        data = {
+            'success': True,
+            'datail': 'Your password has been changed',
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
+class ResetPasswordAPIView(generics.GenericAPIView):   #gmailga habar yuborib beradi
+    serializer_class = ResetPasswordSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        data = {
+            'success': True,
+            'datail': 'Your password has been reset',
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
+class UserProfileRUDView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserProfileSerializer
+    permission_classes = []
 
-# class MyProfileAPIView(generics.ListAPIView):
-#     serializer_class = UserSerializer
-#     queryset = User.objects.all()
-#     permission_classes = [IsAuthenticated]
-#
-#     def get(self, request, *args, **kwargs):
-#         user_id = request.user.id
-#         user = User.objects.get(id=user_id)
-#         serializer = self.get_serializer(user)
-#         return Response(serializer.data)
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save()
+        data = {
+            'success': True,
+            'datail': 'Your account has deactivated',
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
-# class ResetPasswordAPIView(generics.GenericAPIView):   #gmailga habar yuborib beradi
-#     serializer_class = ResetPasswordSerializer
-#     queryset = User.objects.all()
-#
-#     def post(self, request, *args, **kwargs):
-#         email = User.objects.get(email=request.data['email']).email
-#         send_mail_reset_passwd.delay(email)
-#         return Response({"detail": "rest link sent your email"})
 
 
 # class PasswordTokenCheckView(generics.GenericAPIView): # kelgan link orqali yangi password yuboriladi
