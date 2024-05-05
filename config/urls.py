@@ -20,6 +20,8 @@ from django.conf.urls.i18n import i18n_patterns
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -29,6 +31,9 @@ urlpatterns = [
     path('account/', include('apps.account.urls', namespace='account')),
     path('product/', include('apps.product.urls', namespace='product')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_rood=settings.MEDIA_ROOT)
 
 # urlpatterns += i18n_patterns( #urlda keladi uz/en/ru
 #     path('admin/', admin.site.urls),
