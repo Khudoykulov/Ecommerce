@@ -2,7 +2,9 @@ from .views import (
     CategoryViewSet,
     TagViewSet,
     ProductViewSet,
-    ProductImageViewSet
+    ProductImageViewSet,
+    TradeViewSet,
+    WishlistViewSet
 )
 
 from django.urls import path, include
@@ -12,8 +14,10 @@ app_name = 'product'
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
 router.register(r'tags', TagViewSet)
-router.register(r'', ProductViewSet)
 router.register(r'(?P<pid>[0-9]+)/images', ProductImageViewSet)
+router.register(r'trades', TradeViewSet)
+router.register(r'', ProductViewSet)
+router.register(r'wishlist', WishlistViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

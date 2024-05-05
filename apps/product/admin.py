@@ -35,8 +35,8 @@ class ProductImageInline(admin.TabularInline):
 @admin.register(Product)
 class ProductAdmin(TranslationAdmin):
     inlines = [ProductImageInline]
-    list_display = ('id', 'name', 'price', 'discount', 'category', 'get_available',
-                    'get_quantity', 'average_rank', 'created_date')
+    list_display = ('id', 'name', 'price', 'discount', 'sold_count', 'category', 'get_available',
+                    'get_quantity', 'average_rank', 'category', 'created_date')
     date_hierarchy = 'created_date'
     filter_horizontal = ('tags', )
     search_fields = ('id', 'name')

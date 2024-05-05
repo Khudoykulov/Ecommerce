@@ -11,6 +11,7 @@ from .models import (
     Comment,
     Wishlist
 )
+from ..account.seriallizers import UserProfileSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -84,28 +85,56 @@ class ProductPostSerializer(serializers.ModelSerializer):
             return super().update(instance, validated_data)
 
 
+class MiniProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+    category = GetCategorySerializer(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'category', 'description', 'views', 'images', 'average_rank',
+                  'get_quantity', 'get_lakes', 'average_rank', 'created_date',
+                  'modified_date']
+        read_only_fields = ['views', 'created_date', 'modified_date']
 
 
+class TradePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trade
+        fields = ['id', 'product', 'user', 'action', 'quantity', 'description', 'created_date', 'modified_date']
+        read_only_fields = ['user',]
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user_id'] = user.id
+        return super().create(validated_data)
 
 
+class TradeSerializer(serializers.ModelSerializer):
+    product = MiniProductSerializer(read_only=True)
+    user = UserProfileSerializer(read_only=True)
+    action_name = serializers.CharField(source='get_action_display', read_only=True)
+
+    class Meta:
+        model = Trade
+        fields = ['id', 'product', 'user', 'action_name', 'quantity', 'description', 'created_date', 'modified_date']
+        read_only_fields = ['user',]
 
 
+class WishListSerializer(serializers.ModelSerializer):
+    product = MiniProductSerializer(read_only=True)
+
+    class Meta:
+        model = Wishlist
+        fields = ['id', 'product', 'user']
 
 
+class WishListPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wishlist
+        fields = ['id', 'product']
 
-
-
-
-
-
-
-# class TradeSerializer(serializers.ModelSerializer):
-#     product = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = Trade
-#         fields = '__all__'
-#         read_only_fields = ['user',]
-
-# class  MiniProductSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user_id'] = user.id
+        return super().create(validated_data)
 

@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.signals import pre_save, post_save
+from rest_framework.exceptions import ValidationError
 
 from apps.account.models import User
 from django.utils.translation import gettext_lazy as _
@@ -35,6 +36,7 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True)
     discount = models.PositiveIntegerField(validators=[MaxValueValidator(100)])
     views = models.PositiveIntegerField(default=0)
+    sold_count = models.PositiveIntegerField(default=0)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 
@@ -87,6 +89,13 @@ class Trade(models.Model):
 
     def __str__(self):
         return self.product.name
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        incomes = Trade.objects.filter(product_id=self.product_id, action=1).count()
+        outcomes = Trade.objects.filter(product_id=self.product_id, action=2).count()
+        if outcomes > incomes:
+            raise ValidationError('Outcome cannot be more than Income')
+        super().save(force_insert=False, force_update=False, using=None, update_fields=None)
 
 
 class Wishlist(models.Model):
