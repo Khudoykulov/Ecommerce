@@ -25,10 +25,13 @@ urlpatterns = [
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-]
-
-urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
     path('account/', include('apps.account.urls', namespace='account')),
-    path('product/', include('apps.product.urls', namespace='product'))
-)
+    path('product/', include('apps.product.urls', namespace='product')),
+]
+
+# urlpatterns += i18n_patterns( #urlda keladi uz/en/ru
+#     path('admin/', admin.site.urls),
+#     path('account/', include('apps.account.urls', namespace='account')),
+#     path('product/', include('apps.product.urls', namespace='product'))
+# )

@@ -24,3 +24,18 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'order', 'children']
+
+
+
+
+
+# class TradeSerializer(serializers.ModelSerializer):
+#     product = serializers.SerializerMethodField()
+#
+#     class Meta:
+#         model = Trade
+#         fields = '__all__'
+#         read_only_fields = ['user',]
+
+# class  MiniProductSerializer(serializers.ModelSerializer):
+
