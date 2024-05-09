@@ -67,6 +67,21 @@ class ProductViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
             return self.serializer_class
         return self.serializer_post_class
 
+    def filter_queryset(self, queryset):
+        queryset = super().get_queryset()
+        category = Category.objects.all()
+        products_category_list = []
+        products_category = queryset.filter(category__parent=self.request.query_params.get('category'))
+        for c in category:
+            if products_category:
+                products_category_list.append(products_category)
+                return products_category_list
+            return queryset
+    # def filter_queryset(self, queryset):
+    #     parent_category_id = self.request.query_params.get('parent_category_id')
+    #     if parent_category_id:
+    #         queryset = queryset.filter(parent_id=parent_category_id)
+    #     return queryset
 
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
@@ -96,11 +111,6 @@ class TradeViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
     search_fields = ['product__name',]
     filterset_fields = ['action', 'product']
 
-    def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return self.serializer_class
-        return self.serializer_post_class
-
 
 class WishlistViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
     queryset = Wishlist.objects.all()
@@ -110,11 +120,6 @@ class WishlistViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
     filter_backends = [SearchFilter, DjangoFilterBackend,]
     search_fields = ['product__name']
     permission_classes = [IsAuthor | IsAdminOrReadOnly]
-
-    def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return self.serializer_class
-        return self.serializer_post_class
 
     def get_queryset(self):
         qs = super().get_queryset()

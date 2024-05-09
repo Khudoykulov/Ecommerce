@@ -97,6 +97,17 @@ class MiniProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['views', 'created_date', 'modified_date']
 
 
+class TradeSerializer(serializers.ModelSerializer):
+    product = MiniProductSerializer(read_only=True)
+    user = UserProfileSerializer(read_only=True)
+    action_name = serializers.CharField(source='get_action_display', read_only=True)
+
+    class Meta:
+        model = Trade
+        fields = ['id', 'product', 'user', 'action_name', 'quantity', 'description', 'created_date', 'modified_date']
+        read_only_fields = ['user',]
+
+
 class TradePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Trade
@@ -107,17 +118,6 @@ class TradePostSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         validated_data['user_id'] = user.id
         return super().create(validated_data)
-
-
-class TradeSerializer(serializers.ModelSerializer):
-    product = MiniProductSerializer(read_only=True)
-    user = UserProfileSerializer(read_only=True)
-    action_name = serializers.CharField(source='get_action_display', read_only=True)
-
-    class Meta:
-        model = Trade
-        fields = ['id', 'product', 'user', 'action_name', 'quantity', 'description', 'created_date', 'modified_date']
-        read_only_fields = ['user',]
 
 
 class WishListSerializer(serializers.ModelSerializer):

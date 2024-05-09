@@ -12,13 +12,12 @@ class CreateViewSetMixin(viewsets.ModelViewSet):
             raise ImproperlyConfigured('You must provide a model')
         return self.model
 
-    # def get_serializer_class(self):
-    #     if self.serializer_post_class is not None:
-    #         raise ImproperlyConfigured('You must specify a serializer class')
-    #
-    #     if self.action in ['list', 'retrieve']:
-    #         return self.serializer_class
-    #     return self.serializer_post_class
+    def get_serializer_class(self):
+        if self.serializer_post_class is None:
+            raise ImproperlyConfigured('You must specify a serializer class!!!!!!')
+        if self.action in ['list', 'retrieve']:
+            return self.serializer_class
+        return self.serializer_post_class
 
     def create(self, request, *args, **kwargs):
         obj_id = super().create(request, *args, **kwargs).data.get('id')
