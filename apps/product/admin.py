@@ -10,7 +10,8 @@ from apps.product.models import (
     Trade,
     Rank,
     Like,
-    Comment
+    Comment,
+    CommentImage
 )
 
 
@@ -69,8 +70,14 @@ class RankAdmin(admin.ModelAdmin):
     search_fields = ('id', 'product__name', )
 
 
+class CommentImageAdmin(admin.TabularInline):
+    model = CommentImage
+    extra = 0
+
+
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
+    inlines = [CommentImageAdmin,]
     list_display = ('id', 'user', 'product', 'parent', 'top_level_comment_id', 'created_date')
     date_hierarchy = 'created_date'
     search_fields = ('id', 'product__name', )

@@ -7,7 +7,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from apps.utils.mixins import CreateViewSetMixin
 from .permission import IsAdminOrReadOnly, IsAuthor
-from apps.product.models import Category, Tag, Product, ProductImage, Trade, Wishlist
+from apps.product.models import Category, Tag, Product, ProductImage, Trade, Wishlist, Rank, Like, Comment, CommentImage
+
 from apps.product.seriallizers import (
     CategorySerializer,
     TagSerializer,
@@ -17,7 +18,12 @@ from apps.product.seriallizers import (
     TradeSerializer,
     TradePostSerializer,
     WishListSerializer,
-    WishListPostSerializer
+    WishListPostSerializer,
+    LikeSerializer,
+    LikePostSerializer,
+    RankSerializer,
+    CommentSerializer,
+    CommentImageSerializer
 )
 
 
@@ -123,5 +129,46 @@ class WishlistViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        if self.request.user.is_superuser:
+            return qs.all()
         return qs.filter(user_id=self.request.user.id)
+
+
+class LikeViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
+    model = Like
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    serializer_post_class = LikePostSerializer
+    filter_backends = [SearchFilter, DjangoFilterBackend,]
+    search_fields = ['product__name']
+    permission_classes = [IsAuthor | IsAdminOrReadOnly]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.is_superuser:
+            return qs.all()
+        return qs.filter(user_id=self.request.user.id)
+
+
+class RankViewSet(viewsets.ModelViewSet):
+    queryset = Rank.objects.all()
+    serializer_class = RankSerializer
+    filter_backends = [SearchFilter, DjangoFilterBackend,]
+    search_fields = ['product__name']
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Rank.objects.all()
+        return Rank.objects.none()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_serializer_context()
+        ctx['pid'] = self.kwargs.get('pid')
+        return ctx
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.filter(parent__isnull=True)
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthor]
 

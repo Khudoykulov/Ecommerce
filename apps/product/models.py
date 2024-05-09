@@ -137,6 +137,11 @@ class Comment(models.Model):
         return Comment.objects.filter(top_level_comment_id=self.id)
 
 
+class CommentImage(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='comment/%Y/%m/%d', null=True, blank=True)
+
+
 def comment_post_save(sender, instance, created, *args, **kwargs):
     if created:
         if instance.parent:

@@ -1,6 +1,4 @@
 from rest_framework import serializers
-from rest_framework.fields import SerializerMethodField
-
 from .models import (
     Category,
     Tag,
@@ -9,7 +7,9 @@ from .models import (
     Rank,
     Trade,
     Comment,
-    Wishlist
+    Wishlist,
+    Like,
+    CommentImage
 )
 from ..account.seriallizers import UserProfileSerializer
 
@@ -138,3 +138,61 @@ class WishListPostSerializer(serializers.ModelSerializer):
         validated_data['user_id'] = user.id
         return super().create(validated_data)
 
+
+class LikeSerializer(serializers.ModelSerializer):
+    product = MiniProductSerializer(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ['id', 'product', 'user']
+
+
+class LikePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['id', 'product',]
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user_id'] = user.id
+        return super().create(validated_data)
+
+
+class RankSerializer(serializers.ModelSerializer):
+    product = MiniProductSerializer(read_only=True)
+
+    class Meta:
+        model = Rank
+        fields = ['id', 'product', 'user']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user_id'] = user.id
+        pid = self.context['pid']
+        validated_data['product_id'] = pid
+        return super().create(validated_data)
+
+
+class CommentImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentImage
+        fields = ['id', 'image']
+
+    def create(self, validated_data):
+        validated_data['comment_id'] = self.context['comment_id']
+        return super().create(validated_data)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    images = CommentImageSerializer(many=True, read_only=True)
+    product = MiniProductSerializer(read_only=True)
+    user = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'parent', 'user', 'comment', 'top_level_comment_id', 'children', ]
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user_id'] = user.id
+        images = validated_data.pop('images')
