@@ -24,20 +24,34 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='cart_items')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,)
     quantity = models.PositiveIntegerField(default=1)
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    is_ordered = models.BooleanField(default=False)
+    # unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    # amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # discount = models.PositiveIntegerField(validators=[MaxValueValidator(100)])
+    # is_ordered = models.BooleanField(default=False)
     created_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.product.name}'
 
+    @property
+    def get_amount(self):
+        return (float(self.product.price) * ((self.product.discount or 1)/100)) * self.quantity
+
+
+class OrderItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, related_name='order_items')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount = models.PositiveIntegerField(validators=[MaxValueValidator(100)])
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    items = models.ManyToManyField(CartItem,)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    items = models.ManyToManyField(OrderItem,)
     promo = models.CharField(max_length=8, null=True, blank=True)
-    is_delivered = models.BooleanField(default=False)
+    # is_delivered = models.BooleanField(default=False)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)

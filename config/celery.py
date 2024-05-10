@@ -17,10 +17,10 @@ app.conf.update(timezone='Asia/Tashkent')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.conf.beat_schedule = {
-    # 'schedule_task_name': {
-    #     'task': 'app.tasks.task_func',
-    #     'schedule': crontab(minute=0, hour=8),
-    # }
+    'everyday-at-23-59': {
+        'task': 'app.order.tasks.set_expire',
+        'schedule': crontab(minute='59', hour='23'),
+    }
 }
 
 # Load task modules from all registered Django apps.
