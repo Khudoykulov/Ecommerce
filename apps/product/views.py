@@ -1,10 +1,9 @@
-from django.shortcuts import render
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import generics, views, status, permissions, viewsets
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.response import Response
 from apps.utils.mixins import CreateViewSetMixin
 from .permission import IsAdminOrReadOnly, IsAuthor
 from apps.product.models import Category, Tag, Product, ProductImage, Trade, Wishlist, Rank, Like, Comment, CommentImage
@@ -83,11 +82,7 @@ class ProductViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
                 products_category_list.append(products_category)
                 return products_category_list
             return queryset
-    # def filter_queryset(self, queryset):
-    #     parent_category_id = self.request.query_params.get('parent_category_id')
-    #     if parent_category_id:
-    #         queryset = queryset.filter(parent_id=parent_category_id)
-    #     return queryset
+
 
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
@@ -171,4 +166,26 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.filter(parent__isnull=True)
     serializer_class = CommentSerializer
     permission_classes = [IsAuthor]
+
+    def get_serializer_class(self):
+        ctx = super().get_serializer_context()
+        ctx['pid'] = self.kwargs.get('pid')
+        return ctx
+
+    def update(self, request, *args, **kwargs):
+        pass
+
+    def get_object(self):
+        queryset = self.queryset
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        assert lookup_url_kwarg in self.kwargs, (
+                'Expected view %s to be called with a URL keyword argument '
+                'named "%s". Fix your URL conf, or set the `.lookup_field` '
+                'attribute on the view correctly.' %
+                (self.__class__.__name__, lookup_url_kwarg)
+        )
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj: object = get_object_or_404(queryset, **filter_kwargs)
+        self.check_object_permissions(self.request, obj)
+        return obj
 

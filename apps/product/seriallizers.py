@@ -183,16 +183,34 @@ class CommentImageSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    images = CommentImageSerializer(many=True, read_only=True)
-    product = MiniProductSerializer(read_only=True)
-    user = UserProfileSerializer(read_only=True)
+class MiniCommentSerializer(serializers.ModelSerializer):
+    images = CommentImageSerializer(many=True,)
 
     class Meta:
         model = Comment
-        fields = ['id', 'parent', 'user', 'comment', 'top_level_comment_id', 'children', ]
+        fields = ['id', 'parent', 'user', 'comment', 'images', 'created_date']
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    images = CommentImageSerializer(many=True,)
+    user = UserProfileSerializer(read_only=True)
+    tree = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def get_children(self, obj):
+        if obj.parent is None:
+            return MiniCommentSerializer(obj.tree.exclude(id=obj.id), many=True).data
+        return []
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'parent', 'user', 'comment', 'images', 'top_level_comment_id', 'tree', 'created_date']
+        read_only_fields = ['tree',]
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        validated_data['user_id'] = user.id
-        images = validated_data.pop('images')
+        images = validated_data.pop('images', [])
+        validated_data['user_id'] = self.context['request'].user.id
+        validated_data['product_id'] = self.context['pid']
+        obj = super().create(validated_data)
+        for image in images:
+            CommentImage.objects.create(comment=obj, image=image['image'],)
+        return obj
