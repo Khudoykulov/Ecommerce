@@ -67,10 +67,10 @@ class ProductViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
     filterset_fields = ['category', 'tags']
     ordering_fields = ['views', 'id', 'sold_count']
 
-    def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return self.serializer_class
-        return self.serializer_post_class
+    # def get_serializer_class(self):
+    #     if self.action in ['list', 'retrieve']:
+    #         return self.serializer_class
+    #     return self.serializer_post_class
 
     def filter_queryset(self, queryset):
         queryset = super().get_queryset()

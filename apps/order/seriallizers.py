@@ -6,24 +6,20 @@ from ..product.models import Product
 from ..product.seriallizers import ProductSerializer
 
 
-class PromoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Promo
-        fields = ['id', 'name', 'user', 'description', 'discount', 'min_price', 'members',
-                  'expire_date', 'is_expired', 'created_date',]
-        read_only_fields = ['user']
+class PromoSerializer(serializers.Serializer):
+    name = serializers.CharField()
 
     def validate(self, data):
-        if attrs.get('expire_date', False):
-            raise ValidationError('detail', 'promo is expired')
+        user = self.context['request'].user
         name = attrs.get('name')
         if name is None:
             raise ValidationError('detail', 'promo name is required')
-        user = self.context['request'].user
         promo = Promo.objects.filter(name=name)
         if not promo.exists():
             raise ValidationError('detail', 'promo does not exist')
-        if user in promo.first().members.all():
+        if promo.last().is_expired:
+            raise ValidationError('detail', 'Promo is expired')
+        if user in promo.last().members.all():
             return ValidationError('detail', 'promo is already expired')
         return attrs
 
@@ -91,7 +87,6 @@ class OrderPostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        # items = validated_data.pop('items', [])
         promo = Promo.objects.filter(name=validated_data['promo'])
         amount = 0
         cart_items = user.cart_items.all()
@@ -112,7 +107,11 @@ class OrderPostSerializer(serializers.ModelSerializer):
                 raise ValidationError('detail', 'promo is expired')
             if user in promo.first().members.all():
                 return ValidationError('detail', 'promo is already expired')
+            if promo.min_price > amount:
+                return ValidationError('detail', f'Must be more expensive than {promo.min_price}')
             amount = amount * (1 - promo.last().discount/100)
+            promo.members.add(user)
         order.amount = amount
         order.save()
+        user.cart_items.all().delete()
         return order

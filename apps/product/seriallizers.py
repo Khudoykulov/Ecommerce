@@ -54,8 +54,8 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
-    category = GetCategorySerializer( read_only=True)
-    tags = TagSerializer( many=True, read_only=True)
+    category = GetCategorySerializer(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
