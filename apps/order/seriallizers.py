@@ -35,8 +35,8 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'user', 'quantity', 'unit_price', 'amount', 'is_ordered', 'created_date']
-        read_only_fields = ['amount', 'created_date', 'user', 'is_ordered']
+        fields = ['id', 'product', 'user', 'quantity', 'get_amount', 'created_date']
+        read_only_fields = ['get_amount', 'created_date', 'user',]
 
         extra_kwargs = {
             'product': {'required': False},
