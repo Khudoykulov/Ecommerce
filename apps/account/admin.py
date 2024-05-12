@@ -1,5 +1,3 @@
-from contextvars import Token
-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, UserToken
@@ -45,5 +43,3 @@ class TokenAdmin(admin.ModelAdmin):
 
 admin.site.index_title = 'Ecommerce Admin'
 admin.site.site_header = 'Ecommerce Administration'
-
-

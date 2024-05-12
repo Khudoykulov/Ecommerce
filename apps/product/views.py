@@ -67,22 +67,6 @@ class ProductViewSet(CreateViewSetMixin, viewsets.ModelViewSet):
     filterset_fields = ['category', 'tags']
     ordering_fields = ['views', 'id', 'sold_count']
 
-    # def get_serializer_class(self):
-    #     if self.action in ['list', 'retrieve']:
-    #         return self.serializer_class
-    #     return self.serializer_post_class
-
-    def filter_queryset(self, queryset):
-        queryset = super().get_queryset()
-        category = Category.objects.all()
-        products_category_list = []
-        products_category = queryset.filter(category__parent=self.request.query_params.get('category'))
-        for c in category:
-            if products_category:
-                products_category_list.append(products_category)
-                return products_category_list
-            return queryset
-
 
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
@@ -163,17 +147,25 @@ class RankViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.filter(parent__isnull=True)
+    queryset = Comment.objects.filter(parent__isnull=True,)
     serializer_class = CommentSerializer
     permission_classes = [IsAuthor]
 
-    def get_serializer_class(self):
+    def get_serializer_context(self):
         ctx = super().get_serializer_context()
         ctx['pid'] = self.kwargs.get('pid')
         return ctx
 
     def update(self, request, *args, **kwargs):
         pass
+
+    # def get_queryset(self):
+    #     pid = self.kwargs.get('pid')
+    #     print(pid)
+    #     if pid:
+    #         queryset = Comment.objects.filter(product_id=pid, parent__isnull=True)
+    #         return queryset
+    #     return Comment.objects.none()
 
     def get_object(self):
         queryset = self.queryset
